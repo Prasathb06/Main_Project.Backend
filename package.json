@@ -4,7 +4,7 @@
   "description": "mainproject creation",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon Server",
+    "start": "nodemon Server.js",
     "test": "project"
   },
   "author": "arun",
