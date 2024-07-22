@@ -1,12 +1,7 @@
 const User = require("../Models/UserModels")
-const { validationResult } = require("express-validator")
-const UserValidator = require("../Validation/UserValidation")
 
 exports.register = [
-   UserValidator.validationInsert,
     (req, res) => {
-      const error = validationResult(req)
-      if (error.isEmpty()) {
          console.log(req.body)
          const user = new User({
             username: req.body.username,
@@ -21,9 +16,6 @@ exports.register = [
             .catch((err) => {
                res.send(err)
             })
-      } else {
-        res.send(error);
-      }
    }
 ]
 
