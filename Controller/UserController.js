@@ -46,24 +46,43 @@ exports.list = [
 ]
 
 exports.login = [
-   (req, res) => {
-      const username = req.body.username
-      const password = req.body.username
-      UserModel.find({
-         username: username,
-         password: password
-      })
-         .then((user) => {
-            if (user.username == username && user.password == password) {
-               res.send({ userFound: true })
-            } else {
-               res.sen({ userFound: false })
-            }
-            res.send(user)
-         })
-         .catch((err) => {
-            res.send(err)
-         })
+   // (req, res) => {
+   //    const username = req.body.username
+   //    const password = req.body.username
+   //    UserModel.find({
+   //       username: username,
+   //       password: password
+   //    })
+   //       .then((user) => {
+   //          if (user.username == username && user.password == password) {
+   //             res.send({ userFound: true })
+   //          } else {
+   //             res.sen({ userFound: false })
+   //          }
+   //          res.send(user)
+   //       })
+   //       .catch((err) => {
+   //          res.send(err)
+   //       })
          
+   // }
+
+   async (req, res) =>{
+      try {
+         const {email,password} = req.body;
+      const userlogin = await UserModel.findOne({email});
+      if(userlogin){
+         const passwordMatch= bcrypt.compare(password, userlogin.password);
+         if(passwordMatch){
+            res.json("success");
+         }else{
+            res.status(401).json("password does not match!")
+         }
+      }else{
+         res.status(401).json("NO records found");
+      }
+      } catch (error) {
+         res.status(500).json({error:error.message})
+      }
    }
 ]
