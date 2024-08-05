@@ -1,40 +1,64 @@
-const UserModel = require("../Models/UserModels")
-const bcrypt = require("bcrypt")
-exports.register = [
-   //  async (req, res) => {
-   //       console.log(req.body)
-   //       const user = new User({
-   //          username: req.body.username,
-   //          email: req.body.email,
-   //          contact: req.body.contact,
-   //          password: req.body.password
-   //       })
-   //       user.save()
-   //          .then((a) => {
-   //             res.send(a)
-   //          })
-   //          .catch((err) => {
-   //             res.send(err)
-   //          })
-   // }
+const { body, validationResult } = require('express-validator');
+const bcrypt = require('bcrypt');
+const UserModel = require('../Models/UserModels');
 
-   async (req,res)=>{
-   try {
-      const { username, email, contact, password } = req.body;
-      const existingUser = await UserModel.findOne({email});
+exports.register = [
+  body('username').trim().isLength({ min: 3 }).withMessage('Username must be at least 3 characters long'),
+  body('email').isEmail().withMessage('Enter a valid email'),
+  body('contact').trim().isLength({ min: 10 }).withMessage('Contact must be at least 10 characters long'),
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const { username, email, contact, password, cPassword } = req.body;
+      const existingUser = await UserModel.findOne({ email });
       if (existingUser) {
-          return res.status(400).json({ error: "Email already exists" });
+        return res.status(400).json({ error: 'Email already exists' });
       }
       const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = new UserModel({ username, email, contact, password: hashedPassword });
+      const newUser = new UserModel({ username, email, contact, password: hashedPassword, cPassword });
       const savedUser = await newUser.save();
       res.status(201).json(savedUser);
-  } catch (error) {
+    } catch (error) {
       res.status(500).json({ error: error.message });
+    }
   }
-}
+];
 
-]
+
+exports.login = [
+   async (req, res) => {
+      
+         const { email, password } = req.body;
+        UserModel.findOne({ email:email,})
+         .then(async (user)=>{
+         if (user) {
+            const passwordMatch = await bcrypt.compare(password, user.password);
+            if (passwordMatch) {
+               res.send({userFound :true,
+                  message : "Login Success"
+               });
+            } else {
+               res.send({userFund : false,
+                  message : "password does not match"
+               });
+            }
+         } else {
+            res.send({userFound : false,
+               message :"NO records found"
+            });
+         }
+      }) 
+      .catch((error) => {
+         res.send(error)
+      })
+   }
+]   
 
 exports.list = [
    (req, res) => {
@@ -45,44 +69,45 @@ exports.list = [
    }
 ]
 
-exports.login = [
-   // (req, res) => {
-   //    const username = req.body.username
-   //    const password = req.body.username
-   //    UserModel.find({
-   //       username: username,
-   //       password: password
-   //    })
-   //       .then((user) => {
-   //          if (user.username == username && user.password == password) {
-   //             res.send({ userFound: true })
-   //          } else {
-   //             res.sen({ userFound: false })
-   //          }
-   //          res.send(user)
-   //       })
-   //       .catch((err) => {
-   //          res.send(err)
-   //       })
-         
-   // }
 
-   async (req, res) =>{
-      try {
-         const {email,password} = req.body;
-      const userlogin = await UserModel.findOne({email});
-      if(userlogin){
-         const passwordMatch= bcrypt.compare(password, userlogin.password);
-         if(passwordMatch){
-            res.json("success");
-         }else{
-            res.status(401).json("password does not match!")
-         }
-      }else{
-         res.status(401).json("NO records found");
-      }
-      } catch (error) {
-         res.status(500).json({error:error.message})
-      }
-   }
-]
+
+
+// Fetch user details by ID
+exports.getUserById = async (req, res) => {
+  try {
+    const user = await UserModel.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// Update user details by ID
+exports.updateUserById = async (req, res) => {
+  const { username, email, contact, password } = req.body;
+
+  let updateData = { username, email, contact };
+
+  if (password) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    updateData.password = hashedPassword;
+  }
+
+  try {
+    const result = await UserModel.updateOne(
+      { _id: req.params.id },
+      { $set: updateData }
+    );
+
+    if (result.nModified === 0) {
+      return res.status(404).json({ error: 'User not found or no changes detected' });
+    }
+
+    res.json({ message: 'User updated successfully' });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to update user' });
+  }
+};
