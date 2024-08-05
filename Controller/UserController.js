@@ -71,8 +71,6 @@ exports.list = [
 
 
 
-
-// Fetch user details by ID
 exports.getUserById = async (req, res) => {
   try {
     const user = await UserModel.findById(req.params.id);
@@ -85,7 +83,6 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-// Update user details by ID
 exports.updateUserById = async (req, res) => {
   const { username, email, contact, password } = req.body;
 
@@ -110,4 +107,19 @@ exports.updateUserById = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Failed to update user' });
   }
+};
+
+
+exports.delete = (req, res) => {
+  UserModel.deleteOne({ _id: req.params.id })
+    .then((result) => {
+      if (result.deletedCount > 0) {
+        res.json({ success: true, message: 'User deleted successfully' });
+      } else {
+        res.json({ success: false, message: 'User not found' });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({ success: false, message: 'An error occurred', error: err });
+    });
 };

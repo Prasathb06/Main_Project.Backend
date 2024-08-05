@@ -1,11 +1,13 @@
-import React from 'react'
+const mongoose = require("mongoose");
 
-const ProductModels = () => {
-  return (
-    <div>
-      
-    </div>
-  )
-}
+const ProductSchema = new mongoose.Schema({
+  productname: { type: String, required: true },
+  productdis: { type: String, required: true },
+  productprice: { type: Number, required: true },
+  productdiscount: { type: Number, required: true },
+  productimage: { type: [String], required: true },
+  productsubimages: { type: [String], required: true }
+}, { timestamps: true });
 
-export default ProductModels
+const ProductModel = mongoose.model("Product", ProductSchema);
+module.exports = ProductModel;
