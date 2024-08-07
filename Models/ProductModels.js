@@ -6,7 +6,6 @@ const ProductSchema = new mongoose.Schema({
   productprice: { type: Number, required: true },
   productdiscount: { type: Number, required: true },
   productimage: { type: [String], required: true },
-  productsubimages: { type: [String], required: true }
 }, { timestamps: true });
 
 const ProductModel = mongoose.model("Product", ProductSchema);

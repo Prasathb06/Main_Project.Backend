@@ -9,6 +9,10 @@ app.use(express.urlencoded())
 const cors = require("cors")
 app.use(cors())
 
+const path = require('path');
+app.use('/Uploads', express.static(path.join(__dirname, 'Uploads'))); // Adjust paths as needed
+
+
 const mongoose = require("mongoose")
 const MONGOOSE_URL = "mongodb://127.0.0.1:27017/bookhub002"
 

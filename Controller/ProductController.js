@@ -18,8 +18,7 @@ const Uploads = multer({
   }
 })
 .fields([
-  { name: 'productimage', maxCount: 3 },
-  { name: 'productsubimages', maxCount: 3 }
+  { name: 'productimage', maxCount: 3 }
 ]);
 
 module.exports.insert = [
@@ -30,8 +29,7 @@ module.exports.insert = [
       productdis: req.body.productdis,
       productprice: req.body.productprice,
       productdiscount: req.body.productdiscount,
-      productimage: req.files['productimage'] ? req.files['productimage'].map(file => file.path) : [],
-      productsubimages: req.files['productsubimages'] ? req.files['productsubimages'].map(file => file.path) : []
+      productimage: req.files['productimage'] ? req.files['productimage'].map(file => file.path) : []
     });
 
     product.save()
@@ -56,7 +54,18 @@ module.exports.list = [
   }
 ];
 
-
+exports.delete = async (req, res) => {
+  try {
+    const deletedProduct = await productData.findByIdAndDelete(req.params.id);
+    if (!deletedProduct) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    res.status(200).json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error deleting product', error });
+  }
+};
 
 
 
